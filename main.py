@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from bson.objectid import ObjectId
 from docx import Document
 from fpdf import FPDF
+from datetime import datetime, timezone
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -70,7 +72,8 @@ def pdf_to_word():
             "original_format": "pdf",
             "converted_format": "docx",
             "status": "converted",
-            "file_id": file_id
+            "file_id": file_id,
+            "uploaded_at": datetime.now(timezone.utc)
         })
 
         # Return HTML response for HTMX
@@ -126,7 +129,8 @@ def word_to_pdf():
             "original_format": "docx",
             "converted_format": "pdf",
             "status": "converted",
-            "file_id": file_id
+            "file_id": file_id,
+            "uploaded_at": datetime.now(timezone.utc)
         })
 
         return f"<p style='color:green;'>File converted! <a href='/download/{file_id}'>Download PDF File</a></p>"
@@ -182,10 +186,9 @@ def jpg_to_svg():
 
     return "<p style='color:red;'>Invalid file type!</p>", 400
 
-# Convert JPG to SVG Function
+
 def convert_jpg_to_svg(img):
-    # Resize to reduce processing time (optional)
-    max_size = (500, 500)  # Resize large images
+    max_size = (500, 500)  
     img.thumbnail(max_size)
 
     width, height = img.size
@@ -200,6 +203,28 @@ def convert_jpg_to_svg(img):
     
     svg_content += "</svg>"
     return svg_content
+
+
+@app.route("/converted-files", methods=["GET"])
+def converted_files():
+    files = list(mongo_db.files.find({}, {"filename": 1, "file_id": 1}))
+    return render_template("converted.html", files=files)
+
+
+def cleanup_gridfs():
+    expired_files = mongo_db.files.find({"uploaded_at": {"$lt": datetime.utcnow() - timedelta(days=7)}})
+    
+    for file in expired_files:
+        fs.delete(ObjectId(file["file_id"])) 
+        mongo_db.files.delete_one({"_id": file["_id"]}) 
+
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(cleanup_gridfs, "interval", hours=1)
+scheduler.start()
+
+
+mongo_db.files.create_index("uploaded_at", expireAfterSeconds=7*24*60*60)  
 
 if __name__ == "__main__":
     app.run(debug=True)
