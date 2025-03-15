@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Converter</title>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 40px;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input, select, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>File Converter</h2>
+        
+        <form id="upload-form" hx-post="/convert/pdf-to-word" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+            <input type="file" name="file" accept=".pdf" required>
+            <br>
+            <button type="submit">Convert PDF to Word</button>
+        </form>
+
+        <div id="loading" style="display: none;">Processing...</div>
+        <div id="result"></div>
+
+    </div>
+
+    <script>
+        document.body.addEventListener('htmx:beforeSend', function() {
+            document.getElementById("loading").style.display = "block";
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function() {
+            document.getElementById("loading").style.display = "none";
+        });
+    </script>
+
+</body>
+</html>
