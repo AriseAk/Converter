@@ -28,29 +28,42 @@
 </head>
 <body>
 
-    <div class="container">
-        <h2>File Converter</h2>
-        
-        <form id="upload-form" hx-post="/convert/pdf-to-word" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
-            <input type="file" name="file" accept=".pdf" required>
-            <br>
-            <button type="submit">Convert PDF to Word</button>
-        </form>
+<div class="container">
+    <h2>File Converter</h2>
+    
+    <!-- PDF to Word Form -->
+    <form id="pdf-to-word-form" hx-post="/convert/pdf-to-word" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".pdf" required>
+        <br>
+        <button type="submit">Convert PDF to Word</button>
+    </form>
 
-        <div id="loading" style="display: none;">Processing...</div>
-        <div id="result"></div>
+    <form id="word-to-pdf-form" hx-post="/convert/word-to-pdf" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".docx" required>
+        <br>
+        <button type="submit">Convert Word to PDF</button>
+    </form>
 
-    </div>
+    <!-- JPG to SVG Form -->
+    <form id="jpg-to-svg-form" hx-post="/convert/jpg-svg" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+        <br>
+        <button type="submit">Convert JPG to SVG</button>
+    </form>
 
-    <script>
-        document.body.addEventListener('htmx:beforeSend', function() {
-            document.getElementById("loading").style.display = "block";
-        });
+    <div id="loading" style="display: none;">Processing...</div>
+    <div id="result"></div>
+</div>
 
-        document.body.addEventListener('htmx:afterRequest', function() {
-            document.getElementById("loading").style.display = "none";
-        });
-    </script>
+<script>
+    document.body.addEventListener('htmx:beforeSend', function() {
+        document.getElementById("loading").style.display = "block";
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function() {
+        document.getElementById("loading").style.display = "none";
+    });
+</script>
 
 </body>
 </html>
