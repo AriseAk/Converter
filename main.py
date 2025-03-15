@@ -27,7 +27,6 @@ UPLOAD_FOLDER = "uploads/"
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -134,7 +133,6 @@ def word_to_pdf():
 
     return "<p style='color:red;'>Invalid file type!</p>", 400
 
-
 @app.route("/download/<file_id>", methods=["GET"])
 def download_file(file_id):
     try:
@@ -145,12 +143,63 @@ def download_file(file_id):
     except Exception as e:
         return jsonify({"error": "File not found or invalid ID"}), 404
 
-
 # Route: Display Converted Files
 @app.route("/converted-files", methods=["GET"])
 def converted_files():
     files = list(mongo_db.files.find({}, {"filename": 1, "file_id": 1}))
     return render_template("converted.html", files=files)
+
+# ====== FIXED JPG TO SVG CONVERSION ======
+@app.route("/convert/jpg-svg", methods=["POST"])
+def jpg_to_svg():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    if file and allowed_file(file.filename):
+        # ✅ Read file directly from memory
+        img = Image.open(io.BytesIO(file.read())).convert("RGBA")
+        
+        # ✅ Convert to SVG (in memory)
+        svg_data = convert_jpg_to_svg(img)
+        
+        # ✅ Store in MongoDB (directly from memory)
+        file_id = fs.put(svg_data.encode("utf-8"), filename=file.filename.replace(".jpg", ".svg"))
+        
+        # ✅ Save metadata
+        mongo_db.files.insert_one({
+            "filename": file.filename,
+            "original_format": "jpg",
+            "converted_format": "svg",
+            "status": "converted",
+            "file_id": file_id
+        })
+
+        return f"<p style='color:green;'>File converted! <a href='/download/{file_id}'>Download SVG File</a></p>"
+
+    return "<p style='color:red;'>Invalid file type!</p>", 400
+
+# Convert JPG to SVG Function
+def convert_jpg_to_svg(img):
+    # Resize to reduce processing time (optional)
+    max_size = (500, 500)  # Resize large images
+    img.thumbnail(max_size)
+
+    width, height = img.size
+    svg_content = f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
+    
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = img.getpixel((x, y))
+            if a > 0:  # Ignore fully transparent pixels
+                color = f"#{r:02x}{g:02x}{b:02x}"
+                svg_content += f'<rect x="{x}" y="{y}" width="1" height="1" fill="{color}" />'
+    
+    svg_content += "</svg>"
+    return svg_content
 
 if __name__ == "__main__":
     app.run(debug=True)
