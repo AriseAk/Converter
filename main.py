@@ -227,4 +227,4 @@ scheduler.start()
 mongo_db.files.create_index("uploaded_at", expireAfterSeconds=7*24*60*60)  
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
