@@ -204,13 +204,6 @@ def convert_jpg_to_svg(img):
     svg_content += "</svg>"
     return svg_content
 
-
-@app.route("/converted-files", methods=["GET"])
-def converted_files():
-    files = list(mongo_db.files.find({}, {"filename": 1, "file_id": 1}))
-    return render_template("converted.html", files=files)
-
-
 def cleanup_gridfs():
     expired_files = mongo_db.files.find({"uploaded_at": {"$lt": datetime.utcnow() - timedelta(days=7)}})
     
