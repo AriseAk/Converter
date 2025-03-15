@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +11,6 @@
             text-align: center;
             margin: 40px;
         }
-
         .container {
             width: 50%;
             margin: auto;
@@ -21,49 +19,51 @@
             border-radius: 10px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
         }
-
-        input,
-        select,
-        button {
+        input, select, button {
             margin: 10px;
             padding: 10px;
             font-size: 16px;
         }
     </style>
 </head>
-
 <body>
 
-    <div class="container">
-        <h2>File Converter</h2>
+<div class="container">
+    <h2>File Converter</h2>
+    
+    <!-- PDF to Word Form -->
+    <form id="pdf-to-word-form" hx-post="/convert/pdf-to-word" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".pdf" required>
+        <br>
+        <button type="submit">Convert PDF to Word</button>
+    </form>
 
-        <form hx-post="/convert/pdf-to-word" hx-target="#result" hx-indicator="#loading" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit">Convert to Word</button>
-        </form>
+    <form id="word-to-pdf-form" hx-post="/convert/word-to-pdf" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".docx" required>
+        <br>
+        <button type="submit">Convert Word to PDF</button>
+    </form>
 
-        <h3>Convert Word to PDF</h3>
-        <form id="word-to-pdf-form" action="/convert/word-to-pdf" method="POST" enctype="multipart/form-data"
-            hx-post="/convert/word-to-pdf" hx-target="#result" hx-indicator="#loading">
-            <input type="file" name="file" accept=".docx" required>
-            <button type="submit">Convert to PDF</button>
-        </form>
+    <!-- JPG to SVG Form -->
+    <form id="jpg-to-svg-form" hx-post="/convert/jpg-svg" hx-encoding="multipart/form-data" hx-target="#result" hx-indicator="#loading">
+        <input type="file" name="file" accept=".jpg,.jpeg,.png" required>
+        <br>
+        <button type="submit">Convert JPG to SVG</button>
+    </form>
 
-        <div id="loading" style="display: none;">Processing...</div>
-        <div id="result"></div>
+    <div id="loading" style="display: none;">Processing...</div>
+    <div id="result"></div>
+</div>
 
-    </div>
+<script>
+    document.body.addEventListener('htmx:beforeSend', function() {
+        document.getElementById("loading").style.display = "block";
+    });
 
-    <script>
-        document.body.addEventListener('htmx:beforeSend', function () {
-            document.getElementById("loading").style.display = "block";
-        });
-
-        document.body.addEventListener('htmx:afterRequest', function () {
-            document.getElementById("loading").style.display = "none";
-        });
-    </script>
+    document.body.addEventListener('htmx:afterRequest', function() {
+        document.getElementById("loading").style.display = "none";
+    });
+</script>
 
 </body>
-
 </html>
