@@ -1,0 +1,11 @@
+Flask
+pymongo
+gridfs
+werkzeug
+pdf2docx
+Pillow
+python-dotenv
+bson
+python-docx
+fpdf
+APScheduler
